@@ -135,7 +135,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-kaggle.json
+
+# datasets
+*datasets*
 
 # Spyder project settings
 .spyderproject
