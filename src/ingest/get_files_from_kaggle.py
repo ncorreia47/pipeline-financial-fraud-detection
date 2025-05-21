@@ -1,20 +1,21 @@
 import os
 from kaggle.api.kaggle_api_extended import KaggleApi
+from dotenv import load_dotenv
+from colorama import init, Fore, Style
 
-# TO-DO: criar classe para autenticacao e download do dataframe
+# Customização de saídas nos prompts de terminais
+init(autoreset=True)
 
-# Inicializa a API
+
 api = KaggleApi()
 api.authenticate()
 
-# Nome do dataset (exemplo: 'zynicide/wine-reviews')
-dataset = 'zynicide/wine-reviews'
+ # Carrega as variáveis do arquivo .env
+load_dotenv()
+dataset_path = os.getenv("DATASET_PATH")
+dataset_name = os.getenv("DATASET_NAME")
+dataset_local_path = os.getenv("DATASET_LOCAL_PATH")
 
-# Pasta destino
-dest_path = 'dados_kaggle'
-os.makedirs(dest_path, exist_ok=True)
-
-# Faz o download
-api.dataset_download_files(dataset, path=dest_path, unzip=True)
-
-print("Download finalizado com sucesso!")
+# Ou baixa arquivo específico (sem descompactar)
+api.dataset_download_file(f'{dataset_path}', file_name=f'{dataset_name}', path=f'{dataset_local_path}')
+os.rename(f'{dataset_local_path}/{dataset_name}', f'{dataset_local_path}/financial_fraud_detection.csv')
