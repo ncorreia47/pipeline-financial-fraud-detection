@@ -39,11 +39,11 @@ class CreateKaggleKey:
                 os.chmod(kaggle_file_path, 0o600)
 
             except Exception as permission_error:
-                print(Style.BRIGHT + Fore.RED+ 'Erro ao atualizar permissões!')
+                print(Style.BRIGHT + Fore.RED + 'Erro ao atualizar permissões!')
                 raise permission_error
 
         except Exception as create_file_error:
-            print(Style.BRIGHT + Fore.RED+ 'Erro ao criar o arquivo!')
+            print(Style.BRIGHT + Fore.RED + 'Erro ao criar o arquivo!')
             raise create_file_error
 
         
