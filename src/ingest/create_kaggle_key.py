@@ -1,10 +1,7 @@
 import os
 import json
 from dotenv import load_dotenv
-from colorama import init, Fore, Style
-
-# Customização de saídas nos prompts de terminais
-init(autoreset=True)
+from src.utils.custom_logger import BrightYellowPrint, RedBoldPrint, GreenNormalPrint, Printer
 
 class CreateKaggleKey:
     """
@@ -14,7 +11,9 @@ class CreateKaggleKey:
     @staticmethod
     def create_kaggle_key() -> None:
         
-        # Carrega as variáveis do arquivo .env
+        printer = Printer(BrightYellowPrint())
+        printer.display("Carregando variáveis de ambiente")
+
         load_dotenv()
         kaggle_user = os.getenv("KAGGLE_USER")
         kaggle_key = os.getenv("KAGGLE_KEY")
@@ -24,6 +23,12 @@ class CreateKaggleKey:
         kaggle_path = os.path.expanduser(f'{kaggle_url}')
         kaggle_file_path = os.path.join(kaggle_path, kaggle_file)
 
+        printer.set_strategy(GreenNormalPrint())
+        printer.display("Variáveis carregadas com sucesso!")
+
+
+        printer.set_strategy(BrightYellowPrint())
+        printer.display("Criando o arquivo")
         try:
             # Cria a pasta ~/.kaggle se não existir
             os.makedirs(kaggle_path, exist_ok=True)
@@ -32,18 +37,26 @@ class CreateKaggleKey:
             with open(kaggle_file_path, "w") as f:
                 json.dump(kaggle_api_token, f)
             
-            print(Style.BRIGHT + Fore.GREEN + 'Arquivo criado com sucesso!')
+            printer.set_strategy(GreenNormalPrint())
+            printer.display("Arquivo criado com sucesso!")
 
             try:
-                # Garante as permissões corretas (necessário em alguns sistemas)
+                printer.set_strategy(BrightYellowPrint())
+                printer.display("Concedendo permissões necessárias")
+                
                 os.chmod(kaggle_file_path, 0o600)
 
+                printer.set_strategy(GreenNormalPrint())
+                printer.display("Permissões concedidas!")
+
             except Exception as permission_error:
-                print(Style.BRIGHT + Fore.RED + 'Erro ao atualizar permissões!')
+                printer.set_strategy(RedBoldPrint())
+                printer.display("Erro ao conceder permissões!")
                 raise permission_error
 
         except Exception as create_file_error:
-            print(Style.BRIGHT + Fore.RED + 'Erro ao criar o arquivo!')
+            printer.set_strategy(RedBoldPrint())
+            printer.display("Erro ao criar o arquivo!")
             raise create_file_error
 
         

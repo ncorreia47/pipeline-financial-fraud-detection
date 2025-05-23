@@ -12,17 +12,17 @@ class PrintStrategy(ABC):
 
 class BrightYellowPrint(PrintStrategy):
     def print(self, message: str) -> None:
-        print(Style.BRIGHT + Fore.YELLOW + message)
+        print(Style.BRIGHT + Fore.YELLOW + f'--> {message}')
 
 
 class RedBoldPrint(PrintStrategy):
     def print(self, message: str) -> None:
-        print(Style.BRIGHT + Fore.RED + message)
+        print(Style.BRIGHT + Fore.RED + f'# {message}')
 
 
 class GreenNormalPrint(PrintStrategy):
     def print(self, message: str) -> None:
-        print(Fore.GREEN + message)
+        print(Fore.GREEN + f'[{message}]')
 
 
 class Printer:
