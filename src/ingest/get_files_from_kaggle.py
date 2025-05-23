@@ -79,7 +79,3 @@ class GetCsvFileFromKaggle:
         print(df.head())
 
         return df
-
-
-if __name__ == '__main__':
-    GetCsvFileFromKaggle().get_csv()

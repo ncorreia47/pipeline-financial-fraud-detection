@@ -58,7 +58,3 @@ class CreateKaggleKey:
             printer.set_strategy(RedBoldPrint())
             printer.display("Erro ao criar o arquivo!")
             raise create_file_error
-
-        
-if __name__ == '__main__':
-    CreateKaggleKey.create_kaggle_key()
