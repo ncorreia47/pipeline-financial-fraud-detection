@@ -22,7 +22,7 @@ class PostgresConnection:
         
         self.printer.set_strategy(BrightYellowPrint())
         self.printer.display('Carregando variáveis')
-
+        load_dotenv()
         self.host = os.getenv("POSTGRES_HOST")
         self.port = os.getenv("POSTGRES_PORT")
         self.dbname = os.getenv("POSTGRES_DBNAME")
@@ -65,7 +65,7 @@ class PostgresConnection:
             return String(255)
     
 
-    def create_table_if_not_exist(self, engine, metadata, dataframe, is_control_table=False):
+    def create_table_if_not_exist(self, engine, metadata, dataframe=None, is_control_table=False):
 
         if is_control_table:
             new_table = Table(
@@ -77,16 +77,17 @@ class PostgresConnection:
                 Column('ds_column', String(255)),
                 Column('vl_percent_nulo', Float)
                 )
+        else: 
 
-        if not engine.dialect.has_table(engine.connect(), self.table):
-            columns = []
+            if not engine.dialect.has_table(engine.connect(), self.table):
+                columns = []
 
-            for column_name in dataframe.columns:
-                column_type = self.remap_datatype(dataframe[column_name])
-                is_nullable = dataframe[column_name].isnull().any()
-                columns.append(Column(column_name, column_type, nullable=is_nullable))
+                for column_name in dataframe.columns:
+                    column_type = self.remap_datatype(dataframe[column_name])
+                    is_nullable = dataframe[column_name].isnull().any()
+                    columns.append(Column(column_name, column_type, nullable=is_nullable))
 
-            new_table = Table(self.table, metadata, *columns)
+                new_table = Table(self.table, metadata, *columns)
         
         # Cria a tabela definida em new_table:
         metadata.create_all(engine)
