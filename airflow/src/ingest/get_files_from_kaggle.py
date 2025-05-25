@@ -2,13 +2,12 @@ import os
 import pandas as pd
 from kaggle.api.kaggle_api_extended import KaggleApi
 from dotenv import load_dotenv
-from src.utils.custom_logger import BrightYellowPrint, RedBoldPrint, GreenNormalPrint, Printer
 
 class GetCsvFileFromKaggle:
 
-    def __init__(self, printer: Printer):
-        self.printer = printer
+    def __init__(self):
         self.api = KaggleApi()
+        load_dotenv()
 
 
     def get_csv(self) -> pd.DataFrame:
@@ -29,34 +28,27 @@ class GetCsvFileFromKaggle:
 
     def _authenticate(self):
 
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display('Realizando autenticação da API...')
+        print('Realizando autenticação da API...')
         self.api.authenticate()
-        self.printer.set_strategy(GreenNormalPrint())
-        self.printer.display('Autenticação realizada!')
+        print('Autenticação realizada!')
 
 
     def _load_env_vars(self):
 
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display('Carregando variáveis de ambiente...')
-        load_dotenv()
+        print('Carregando variáveis de ambiente...')
         self.dataset_path = os.getenv("DATASET_PATH")
         self.dataset_name = os.getenv("DATASET_NAME")
         self.dataset_local_path = os.getenv("DATASET_LOCAL_PATH")
         self.file_name = os.getenv("FILE_NAME")
         self.local_file_name = os.path.join(self.dataset_local_path, self.file_name)
-        self.printer.set_strategy(GreenNormalPrint())
-        self.printer.display('Variáveis carregadas!')
+        print('Variáveis carregadas!')
 
 
     def _download_and_extract(self):
 
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display('Descompactando o arquivo...')
+        print('Descompactando o arquivo...')
         self.api.dataset_download_files(self.dataset_path, path=self.dataset_local_path, unzip=True)
-        self.printer.set_strategy(GreenNormalPrint())
-        self.printer.display('Arquivo descompactado!')
+        print('Arquivo descompactado!')
 
 
     def _rename_file(self):
@@ -71,11 +63,9 @@ class GetCsvFileFromKaggle:
 
     def _load_dataframe(self) -> pd.DataFrame:
 
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display('Criando o dataframe...')
+        print('Criando o dataframe...')
         df = pd.read_csv(self.local_file_name, encoding='utf-8', sep=',', on_bad_lines='skip')
-        self.printer.set_strategy(GreenNormalPrint())
-        self.printer.display('Dataframe criado!')
+        print('Dataframe criado!')
         print(df.head())
 
         return df

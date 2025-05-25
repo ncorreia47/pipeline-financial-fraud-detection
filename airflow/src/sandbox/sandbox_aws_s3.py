@@ -1,12 +1,10 @@
 import boto3
 import os
 from dotenv import load_dotenv
-from src.utils.custom_logger import BrightYellowPrint, RedBoldPrint, GreenNormalPrint, Printer
 
 class AWSS3Connection:
 
-    def __init__(self, printer: Printer):
-        self.printer = printer
+    def __init__(self):
         load_dotenv()
 
 
@@ -15,8 +13,7 @@ class AWSS3Connection:
         aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
         aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display('Criando a conexão com S3')
+        print('Criando a conexão com S3')
         try:
             s3_client = boto3.client(
                 's3', 
@@ -24,14 +21,13 @@ class AWSS3Connection:
                 aws_secret_access_key=aws_secret_access_key
                 )
         
-            self.printer.set_strategy(GreenNormalPrint())
-            self.printer.display('Conexão com S3 criada com sucesso!')
+            print('Conexão com S3 criada com sucesso!')
 
             return s3_client
         
         except Exception as create_s3_connection_error:
-            self.printer.set_strategy(RedBoldPrint())
-            self.printer.display('Problemas ao criar a conexão com S3')
+
+            print('Problemas ao criar a conexão com S3')
             raise create_s3_connection_error 
     
 
@@ -48,14 +44,13 @@ class AWSS3Connection:
         file_name = os.getenv("FILE_NAME")
         file_path = os.path.join(dataset_local_path, file_name)
         
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display('Iniciando o processo de upload do arquivo para o S3. Isso pode demorar um pouco')
+        print('Iniciando o processo de upload do arquivo para o S3. Isso pode demorar um pouco')
         try:
+
             s3_client.upload_file(file_path, bucket_name, file_name)
-            self.printer.set_strategy(GreenNormalPrint())
-            self.printer.display(f'Arquivo {file_name} enviado com sucesso para s3://{bucket_name}')
+            print(f'Arquivo {file_name} enviado com sucesso para s3://{bucket_name}')
 
         except Exception as upload_file_error:
-            self.printer.set_strategy(RedBoldPrint())
-            self.printer.display(f'Arquivo {file_name} não foi enviado para s3://{bucket_name}')
+
+            print(f'Arquivo {file_name} não foi enviado para s3://{bucket_name}')
             raise upload_file_error

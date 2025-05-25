@@ -4,7 +4,6 @@ import uuid
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Table, Column, MetaData, String, Integer, Float, DateTime
 from sqlalchemy.dialects.postgresql import TIMESTAMP
-from src.utils.custom_logger import BrightYellowPrint, RedBoldPrint, GreenNormalPrint, Printer
 from src.utils.custom_functions import create_dt_processamento_column
 
 class PostgresConnection:
@@ -12,15 +11,13 @@ class PostgresConnection:
     Classe responsável pela criação da conexão com o banco Postgres. A ideia é simular um ambiente on-premisse.
     """
 
-    def __init__(self, printer: Printer):
-        self.printer = printer
+    def __init__(self):
+        load_dotenv()
 
 
     def create_pg_connection(self):
         
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display('Carregando variáveis')
-        load_dotenv()
+        print('Carregando variáveis')
         self.host = os.getenv("POSTGRES_HOST")
         self.port = os.getenv("POSTGRES_PORT")
         self.dbname = os.getenv("POSTGRES_DBNAME")
@@ -30,19 +27,18 @@ class PostgresConnection:
         self.table = os.getenv("POSTGRES_TABLE")
         self.control_table = os.getenv("POSTGRES_CONTROL_TABLE")
 
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display('Iniciando criação da conexão')
+        print('Iniciando criação da conexão')
 
         try:
+
             engine = create_engine(f'postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}',  connect_args={"sslmode": "disable"})
             metadata = MetaData()
-            self.printer.set_strategy(GreenNormalPrint())
-            self.printer.display('Conexão criada com sucesso!')
+            print('Conexão criada com sucesso!')
             return engine, metadata
 
         except Exception as create_connection_error:
-            self.printer.set_strategy(RedBoldPrint())
-            self.printer.display('Erro ao criar a conexão no banco Posgres')
+
+            print('Erro ao criar a conexão no banco Posgres')
             raise create_connection_error
         
     
@@ -66,6 +62,7 @@ class PostgresConnection:
     def create_table_if_not_exist(self, engine, metadata, dataframe=None, is_control_table=False):
 
         if is_control_table:
+
             new_table = Table(
                 self.control_table, metadata,
                 Column('run_id', String(36), primary_key=False),
@@ -91,27 +88,25 @@ class PostgresConnection:
         # Cria a tabela definida em new_table:
         new_table.create(engine, checkfirst=True)
         
-        self.printer.set_strategy(GreenNormalPrint())
-        self.printer.display(f'Tabela {new_table.name} criada com sucesso!')
+        print(f'Tabela {new_table.name} criada com sucesso!')
 
     
     def insert_pg_sandbox(self, engine, dataframe):
 
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display(f'Iniciando o processo de inserção dos dados. Isso pode demorar um pouco')
+        print(f'Iniciando o processo de inserção dos dados. Isso pode demorar um pouco')
         dataframe = dataframe.where(pd.notna(dataframe), None)
         total_registros = len(dataframe)
 
         try:
+
             dataframe.to_sql(self.table, engine, schema=self.schema, index=False, if_exists='append')
-            self.printer.set_strategy(GreenNormalPrint())
-            self.printer.display(f'{total_registros} registros inseridos com sucesso!')
+            print(f'{total_registros} registros inseridos com sucesso!')
 
             self.insert_pg_control_table(engine, dataframe, status='SUCESS')
 
         except Exception as insert_pg_error:
-            self.printer.set_strategy(RedBoldPrint())
-            self.printer.display(f'Erro ao inserir os dados na tabela {self.table}')
+
+            print(f'Erro ao inserir os dados na tabela {self.table}')
             self.insert_pg_control_table(engine, dataframe, status='ERROR')
 
             raise insert_pg_error
@@ -119,8 +114,7 @@ class PostgresConnection:
 
     def insert_pg_control_table(self, engine, dataframe, status):
         
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display(f'Criando o processo de log na tabela de controle')
+        print(f'Criando o processo de log na tabela de controle')
 
         run_id = str(uuid.uuid4())
         total_registros = len(dataframe)
@@ -141,5 +135,4 @@ class PostgresConnection:
             } for m in metrics])
         
         df_controle.to_sql(self.control_table, engine, schema=self.schema, index=False, if_exists='append')
-        self.printer.set_strategy(BrightYellowPrint())
-        self.printer.display(f'Registro {run_id} inserido com sucesso na tabela de controle')
+        print(f'Registro {run_id} inserido com sucesso na tabela de controle')
