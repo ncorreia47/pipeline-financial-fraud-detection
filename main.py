@@ -5,11 +5,12 @@ from src.utils.custom_logger import Printer, BrightYellowPrint
 from src.ingest.create_kaggle_key import CreateKaggleKey
 from src.ingest.get_files_from_kaggle import GetCsvFileFromKaggle
 from src.sandbox.sandbox_postgres import PostgresConnection
+from src.sandbox.sandbox_aws_s3 import AWSS3Connection
 from src.utils.custom_functions import create_dt_processamento_column
 
 
 def main():
-
+    
     # Inicia o pipeline de extração
     CreateKaggleKey.create_kaggle_key()
     printer = Printer(BrightYellowPrint())
@@ -28,6 +29,11 @@ def main():
     # Realiza os tratamentos mínimos no dataframe
     dataframe['dt_processamento'] = create_dt_processamento_column()
     
+    # Sobe o arquivo no S3
+    s3_connection = AWSS3Connection(printer)
+    s3_connection.upload_to_s3()
+
+
     # Inicia a conexão Posgres (on-premisse)
     pg = PostgresConnection(printer)
     engine, metadata = pg.create_pg_connection()
