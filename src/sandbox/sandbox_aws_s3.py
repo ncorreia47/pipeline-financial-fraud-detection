@@ -8,8 +8,12 @@ class AWSS3Connection:
         
         load_dotenv()
         aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_access_key = load_dotenv("AWS_SECRET_ACCESS_KEY")
-        s3_client = boto3.client('s3', aws_access_key_id, aws_secret_access_key)
+        aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+        s3_client = boto3.client(
+            's3', 
+            aws_access_key_id=aws_access_key_id, 
+            aws_secret_access_key=aws_secret_access_key
+            )
 
         return s3_client
     
@@ -19,7 +23,11 @@ class AWSS3Connection:
         Faz upload de um arquivo para um bucket S3.
         """
         # Inicializa o cliente S3
-        s3_client = self.create_s3_connection()
+        try:
+            s3_client = self.create_s3_connection()
+        
+        except Exception as create_s3_connection_error:
+            raise create_s3_connection_error
 
         # Carrega as variáveis de ambiente
         load_dotenv()
@@ -30,6 +38,6 @@ class AWSS3Connection:
         
         try:
             s3_client.upload_file(file_path, bucket_name, file_name)
-            print(f"Arquivo {file_path} enviado com sucesso para s3://{bucket_name}/{file_name}")
+            print(f"Arquivo {file_name} enviado com sucesso para s3://{bucket_name}")
         except Exception as e:
             print(f"Erro ao enviar o arquivo: {e}")
