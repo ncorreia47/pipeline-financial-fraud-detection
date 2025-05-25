@@ -1,13 +1,11 @@
 import os
 import pandas as pd
-import pytz
 import uuid
-from datetime import datetime
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Table, Column, MetaData, String, Integer, Float, DateTime
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from src.utils.custom_logger import BrightYellowPrint, RedBoldPrint, GreenNormalPrint, Printer
-
+from src.utils.custom_functions import create_dt_processamento_column
 
 class PostgresConnection:
     """
@@ -28,6 +26,7 @@ class PostgresConnection:
         self.dbname = os.getenv("POSTGRES_DBNAME")
         self.user = os.getenv("POSTGRES_USERNAME")
         self.password = os.getenv("POSTGRES_PASSWORD")
+        self.schema = os.getenv("POSTGRES_SCHEMA")
         self.table = os.getenv("POSTGRES_TABLE")
         self.control_table = os.getenv("POSTGRES_CONTROL_TABLE")
 
@@ -35,9 +34,8 @@ class PostgresConnection:
         self.printer.display('Iniciando criação da conexão')
 
         try:
-            engine = create_engine(f'postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}')
+            engine = create_engine(f'postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}',  connect_args={"sslmode": "disable"})
             metadata = MetaData()
-
             self.printer.set_strategy(GreenNormalPrint())
             self.printer.display('Conexão criada com sucesso!')
             return engine, metadata
@@ -75,7 +73,8 @@ class PostgresConnection:
                 Column('total_registros', Integer),
                 Column('ds_status', String(20)),
                 Column('ds_column', String(255)),
-                Column('vl_percent_nulo', Float)
+                Column('vl_percent_nulo', Float),
+                schema=self.schema
                 )
         else: 
 
@@ -87,10 +86,10 @@ class PostgresConnection:
                     is_nullable = dataframe[column_name].isnull().any()
                     columns.append(Column(column_name, column_type, nullable=is_nullable))
 
-                new_table = Table(self.table, metadata, *columns)
+                new_table = Table(self.table, metadata, *columns, schema=self.schema)
         
         # Cria a tabela definida em new_table:
-        metadata.create_all(engine)
+        new_table.create(engine, checkfirst=True)
         
         self.printer.set_strategy(GreenNormalPrint())
         self.printer.display(f'Tabela {new_table.name} criada com sucesso!')
@@ -98,12 +97,13 @@ class PostgresConnection:
     
     def insert_pg_sandbox(self, engine, dataframe):
 
-        dataframe['dt_processamento'] = self.create_dt_processamento_column()
+        self.printer.set_strategy(BrightYellowPrint())
+        self.printer.display(f'Iniciando o processo de inserção dos dados. Isso pode demorar um pouco')
         dataframe = dataframe.where(pd.notna(dataframe), None)
         total_registros = len(dataframe)
 
         try:
-            dataframe.to_sql(self.table, engine, index=False, if_exists='append')
+            dataframe.to_sql(self.table, engine, schema=self.schema, index=False, if_exists='append')
             self.printer.set_strategy(GreenNormalPrint())
             self.printer.display(f'{total_registros} registros inseridos com sucesso!')
 
@@ -118,6 +118,9 @@ class PostgresConnection:
 
 
     def insert_pg_control_table(self, engine, dataframe, status):
+        
+        self.printer.set_strategy(BrightYellowPrint())
+        self.printer.display(f'Criando o processo de log na tabela de controle')
 
         run_id = str(uuid.uuid4())
         total_registros = len(dataframe)
@@ -130,21 +133,13 @@ class PostgresConnection:
         
         df_controle = pd.DataFrame([{
             'run_id': run_id,
-            'dt_processamento': self.create_dt_processamento_column(),
+            'dt_processamento': create_dt_processamento_column(),
             'total_registros': total_registros,
             'ds_status': status,
             'ds_column': m['column'],
             'vl_percent_nulo': m['vl_percent_nulo']
             } for m in metrics])
         
-        df_controle.to_sql(self.control_table, engine, index=False, if_exists='append')
+        df_controle.to_sql(self.control_table, engine, schema=self.schema, index=False, if_exists='append')
         self.printer.set_strategy(BrightYellowPrint())
         self.printer.display(f'Registro {run_id} inserido com sucesso na tabela de controle')
-
-
-    def create_dt_processamento_column(self) -> pd.Timestamp:
-
-        tz = pytz.timezone('America/Sao_Paulo')
-        dt_processamento = pd.Timestamp(datetime.now(tz))
-
-        return dt_processamento
