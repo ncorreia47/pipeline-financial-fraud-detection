@@ -18,8 +18,6 @@ class GetCsvFileFromKaggle:
 
         return: pd.DataFrame
         """
-        
-        CreateKaggleKey().create_kaggle_key()
 
         self._authenticate()
         self._load_env_vars()
