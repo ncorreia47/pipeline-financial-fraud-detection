@@ -1,12 +1,12 @@
 import os
 import pandas as pd
 from dotenv import load_dotenv
-from src.utils.custom_logger import Printer, BrightYellowPrint
-from src.ingest.create_kaggle_key import CreateKaggleKey
-from src.ingest.get_files_from_kaggle import GetCsvFileFromKaggle
-from src.sandbox.sandbox_postgres import PostgresConnection
-from src.sandbox.sandbox_aws_s3 import AWSS3Connection
-from src.utils.custom_functions import create_dt_processamento_column
+from airflow.src.utils.custom_logger import Printer, BrightYellowPrint
+from airflow.src.ingest.create_kaggle_key import CreateKaggleKey
+from airflow.src.ingest.get_files_from_kaggle import GetCsvFileFromKaggle
+from airflow.src.sandbox.sandbox_postgres import PostgresConnection
+from airflow.src.sandbox.sandbox_aws_s3 import AWSS3Connection
+from airflow.src.utils.custom_functions import create_dt_processamento_column
 
 
 def main():
