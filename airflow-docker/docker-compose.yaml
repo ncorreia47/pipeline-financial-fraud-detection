@@ -13,6 +13,7 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
+    - ../src:/opt/airflow/src
   user: "${AIRFLOW_UID}"
   depends_on:
     - postgres
