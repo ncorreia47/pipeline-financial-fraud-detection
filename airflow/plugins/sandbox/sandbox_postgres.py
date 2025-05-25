@@ -4,7 +4,7 @@ import uuid
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Table, Column, MetaData, String, Integer, Float, DateTime
 from sqlalchemy.dialects.postgresql import TIMESTAMP
-from src.utils.custom_functions import create_dt_processamento_column
+from utils.custom_functions import create_dt_processamento_column
 
 class PostgresConnection:
     """

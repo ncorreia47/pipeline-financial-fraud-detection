@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from create_kaggle_key import CreateKaggleKey
 from kaggle.api.kaggle_api_extended import KaggleApi
 from dotenv import load_dotenv
 
@@ -17,6 +18,8 @@ class GetCsvFileFromKaggle:
 
         return: pd.DataFrame
         """
+        
+        CreateKaggleKey().create_kaggle_key()
 
         self._authenticate()
         self._load_env_vars()
