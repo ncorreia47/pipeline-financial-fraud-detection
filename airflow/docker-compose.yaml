@@ -13,7 +13,8 @@ x-airflow-common:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ./kaggle:/home/airflow/.config/kaggle 
+    - ./kaggle:/home/airflow/.config/kaggle
+    - ./datasets:/opt/airflow/datasets
   depends_on:
     - postgres
 
