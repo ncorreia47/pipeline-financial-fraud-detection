@@ -96,13 +96,19 @@ def check_file_exists():
     logging.info(f"Arquivo {target_file} encontrado com sucesso!")
 
 
+default_args = {
+    'owner': 'data engineer',
+    'start_date': datetime(2024, 1, 1),
+    'retries': 1
+}
+
 with DAG(
     dag_id="raw_kaggle_financial_dataset",
     description="DAG para baixar e preparar dataset do Kaggle",
     schedule_interval=None,
-    start_date=datetime(2024, 1, 1),
     catchup=False,
-    tags=["kaggle", "download"],
+    tags=["raw", "kaggle", "financial"],
+    
 ) as dag:
 
     download_dataset = PythonOperator(
