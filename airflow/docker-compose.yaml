@@ -8,9 +8,9 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
-    _PIP_ADDITIONAL_REQUIREMENTS: "pandas boto3 kaggle kagglehub"
+    _PIP_ADDITIONAL_REQUIREMENTS: "pandas boto3 kaggle kagglehub dbt-core dbt-postgres"
   volumes:
-    - ./dags:/opt/airflow/dags
+    - ./dags/dbt_dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./kaggle:/home/airflow/.config/kaggle
@@ -49,6 +49,22 @@ services:
       --lastname LAST_NAME \
       --role Admin \
       --email admin@example.org"
+  
+    dbt:
+      image: dbt-labs/dbt:latest
+      container_name: dbt-container
+      volumes:
+        - ./dbt_data_pipeline:/dbt
+        - ./dbt_data_pipeline/target:/dbt/target
+      working_dir: /dbt
+      environment:
+        DBT_PROFILE_DIR: /dbt/config 
+      command: run
+      networks:
+        - default
+      extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 
 volumes:
   postgres-db-volume:
